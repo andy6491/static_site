@@ -109,8 +109,24 @@ def split_nodes_link(old_nodes):
         new_nodes.extend(current_nodes)
     return new_nodes 
 
+def text_to_textnodes(text):
+    # special case for empty string
+    if text == "":
+        return [TextNode("", TextType.TEXT)]
+    
+    nodes = [TextNode(text, TextType.TEXT)]
+    # process images
+    nodes = split_nodes_image(nodes)
+    # process links
+    nodes = split_nodes_link(nodes)
 
-        
+    # process other delimiters
+    nodes = split_nodes_delimiter(nodes, "**", TextType.BOLD)
+    nodes = split_nodes_delimiter(nodes, "_", TextType.ITALIC)
+    nodes = split_nodes_delimiter(nodes, "`", TextType.CODE)
+
+    return nodes
+
 
         
 def extract_markdown_images(text):
