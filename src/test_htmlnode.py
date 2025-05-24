@@ -97,7 +97,8 @@ class TestHTMLNode(unittest.TestCase):
 
     def test_children_missing(self):
         with self.assertRaises(ValueError):
-            ParentNode("div", None).to_html()
+            node = HTMLNode("div", None, [])
+            node.to_html()
         
     # property tests
     def test_with_single_property(self):

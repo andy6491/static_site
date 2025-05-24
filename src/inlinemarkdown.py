@@ -130,10 +130,80 @@ def text_to_textnodes(text):
 
 
         
-def extract_markdown_images(text):
-    matches = re.findall(r"!\[([^\[\]]*)\]\(([^\(\)]*)\)", text)
-    return matches
+def extract_markdown_images(input_text):
+    # if imput is string
+    if isinstance(input_text, str):
+        matches = re.findall(r"!\[([^\[\]]*)\]\(([^\(\)]*)\)", input_text)
+        return matches
+    
+    # if input is list of TextNodes
+    result = []
+    for text_node in input_text:
+        if text_node.text_type != TextType.TEXT:
+            result.append(text_node)
+            continue
 
-def extract_markdown_links(text):
-    matches = re.findall(r"(?<!!)\[([^\[\]]*)\]\(([^\(\)]*)\)", text)
-    return matches
+        text = text_node.text
+        matches = re.findall(r"!\[([^\[\]]*)\]\(([^\(\)]*)\)", text)
+
+        # split text by image markdown syntax and create new nodes
+        curr_idx = 0
+        for alt_text, url in matches:
+            image_md = f"![{alt_text}]({url})"
+            start_idx = text.find(image_md, curr_idx)
+
+            # add text before the image as a TEXT node
+            if start_idx > curr_idx:
+                result.append(TextNode(text[curr_idx:start_idx], TextType.TEXT))
+
+            # add image as an IMAGE node
+            result.append(TextNode(url, TextType.IMAGE, alt_text))
+
+            # update current index to after the image markdown
+            curr_idx = start_idx + len(image_md)
+
+        # add any remaining text
+        if curr_idx < len(text):
+            result.append(TextNode(text[curr_idx:], TextType.TEXT)) 
+
+
+    return result
+
+def extract_markdown_links(input_data):
+    # if input is a string
+    if isinstance(input_data, str):
+        matches = re.findall(r"(?<!!)\[([^\[\]]*)\]\(([^\(\)]*)\)", input_data)
+        return matches
+
+    # if input is a list ofTextNodes
+    result = []
+    for text_node in input_data:
+        if text_node.text_type != TextType.TEXT:
+            result.append(text_node)
+            continue
+        text = text_node.text
+        matches = re.findall(r"(?<!!)\[([^\[\]]*)\]\(([^\(\)]*)\)", text)
+
+        if not matches:
+            result.append(text_node)
+            continue
+        # process matches abd build new nodes
+        curr_idx = 0
+        for link_text, url in matches:
+            link_md = f"[{link_text}]({url})"
+            start_idx = text.find(link_md, curr_idx)
+
+            # add text befor link as a Text node
+            if start_idx > curr_idx:
+                result.append(TextNode(text[curr_idx:start_idx], TextType.TEXT))
+
+            # add link as a LINK node
+            result.append(TextNode(link_text, TextType.LINK, url))
+
+            # update current index to after the link markdown
+            curr_idx = start_idx + len(link_md)
+        
+        # add any remaining text
+        if curr_idx < len(text):
+            result.append(TextNode(text[curr_idx:], TextType.TEXT))
+    return result
