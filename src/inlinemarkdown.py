@@ -1,6 +1,23 @@
 import re
 from textnode import TextNode, TextType
 
+def text_node_to_html_node(text_node):
+    match (text_node.text_type):
+        case (TextType.TEXT):
+            return HTMLNode(None, text_node.text)
+        case (TextType.BOLD):
+            return HTMLNode("b", text_node.text)
+        case (TextType.ITALIC):
+            return HTMLNode("i", text_node.text)
+        case (TextType.CODE):
+            return HTMLNode("code", text_node.text)
+        case (TextType.LINK):
+            return HTMLNode("a", text_node.text, None, {"href": text_node.url})
+        case (TextType.IMAGE):
+            return HTMLNode("img", "", None, {"src": text_node.url, "alt": text_node.text})
+        case _:
+            raise ValueError(f"Invalid text type: {text_node.text_type}")
+
 def split_nodes_delimiter(old_nodes, delimiter, text_type):
     new_nodes = []
     for old_node in old_nodes:

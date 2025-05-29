@@ -1,7 +1,6 @@
 import re
 from enum import Enum
 from inlinemarkdown import *
-from main import text_node_to_html_node
 from htmlnode import HTMLNode, ParentNode, LeafNode
 
 def markdown_to_blocks(markdown):
