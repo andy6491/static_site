@@ -8,6 +8,14 @@ class HTMLNode:
     def to_html(self):
         if self.tag is None:
             return self.value or ""
+        
+        img_props = ""
+        if self.value == "":
+            if self.props is not None:
+                for key, value in self.props.items():
+                    img_props += f' {key}="{value}"'
+            return f"<{self.tag}{img_props}>"
+
     
         # If tag is provided, we need either value or children
         if self.value is None and (self.children is None or len(self.children) == 0):

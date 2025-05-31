@@ -1,4 +1,5 @@
 import re
+from htmlnode import HTMLNode
 from textnode import TextNode, TextType
 
 def text_node_to_html_node(text_node):
@@ -174,7 +175,7 @@ def extract_markdown_images(input_text):
                 result.append(TextNode(text[curr_idx:start_idx], TextType.TEXT))
 
             # add image as an IMAGE node
-            result.append(TextNode(url, TextType.IMAGE, alt_text))
+            result.append(TextNode(alt_text, TextType.IMAGE, url))
 
             # update current index to after the image markdown
             curr_idx = start_idx + len(image_md)
@@ -182,7 +183,6 @@ def extract_markdown_images(input_text):
         # add any remaining text
         if curr_idx < len(text):
             result.append(TextNode(text[curr_idx:], TextType.TEXT)) 
-
 
     return result
 
