@@ -1,10 +1,8 @@
 from textnode import TextNode, TextType
 from htmlnode import LeafNode, HTMLNode
 from markdownblock import markdown_to_html_node
-import os, shutil
+import os, shutil, sys
 
-
-print("hello world")
 
 def copy_content(source, destination):
     if os.path.exists(destination):
@@ -34,7 +32,7 @@ def extract_title(markdown):
             return strip_title
     raise Exception("No title")
 
-def generate_page(from_path, template_path, dest_path):
+def generate_page(from_path, template_path, dest_path, basepath):
     print(f"Generating page from {from_path} to {dest_path} using {template_path}")
     with open(from_path, "r") as f:
         from_read = f.read()
@@ -44,6 +42,8 @@ def generate_page(from_path, template_path, dest_path):
     title = extract_title(from_read)
     replace_title = template_read.replace("{{ Title }}", title)
     replace_content = replace_title.replace("{{ Content }}", markdown_conversion)
+    replace_content = replace_content.replace('href="/', f'href="{basepath}')
+    replace_content = replace_content.replace('src="/', f'src="{basepath}')
     os.makedirs(os.path.dirname(dest_path), exist_ok=True)
     with open(dest_path, "w") as f:
         f.write(replace_content)
@@ -55,7 +55,7 @@ def copy_public(static, public):
             shutil.copytree(static, public)
 
 
-def generate_pages_recursive(dir_path_content, template_path, dest_dir_path):
+def generate_pages_recursive(dir_path_content, template_path, dest_dir_path, basepath):
     items = os.listdir(dir_path_content)
     for item in items:
         source_path = os.path.join(dir_path_content, item)
@@ -73,19 +73,26 @@ def generate_pages_recursive(dir_path_content, template_path, dest_dir_path):
                 template_read = f.read()
             markdown_conversion = markdown_to_html_node(source_read).to_html()
             replace_content = template_read.replace("{{ Content }}", markdown_conversion)
+            replace_content = replace_content.replace('href="/', f'href="{basepath}')
+            replace_content = replace_content.replace('src="/', f'src="{basepath}')
             with open(dest_path, "w") as f:
                 f.write(replace_content)
         elif os.path.isdir(source_path):
             os.makedirs(os.path.join(dest_dir_path, item), exist_ok=True)
-            generate_pages_recursive(source_path, template_path, os.path.join(dest_dir_path, item))
-
+            generate_pages_recursive(source_path, template_path, dest_dir_path, basepath)
 
 
 def main():
-    node = TextNode("this is some anchor text", TextType.LINK, "https://www.boot.dev")
-    print(node)
-    copy_public("static", "public")
-    generate_pages_recursive("content", "template.html", "public")
+    try:
+        basepath = sys.argv[1]
+    except IndexError:
+        basepath = "/"
+    if os.path.exists("docs"):
+        shutil.rmtree("docs")
+    os.mkdir("docs")
+    copy_public("static", "docs")
+    generate_pages_recursive("static", "template.html", "docs", basepath)
+    
 
 
 
