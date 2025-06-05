@@ -71,8 +71,10 @@ def generate_pages_recursive(dir_path_content, template_path, dest_dir_path, bas
                 source_read = f.read()
             with open(template_path, "r") as f:
                 template_read = f.read()
+            title = extract_title(source_read)
             markdown_conversion = markdown_to_html_node(source_read).to_html()
-            replace_content = template_read.replace("{{ Content }}", markdown_conversion)
+            replace_title = template_read.replace("{{ Title }}", title)
+            replace_content = replace_title.replace("{{ Content }}", markdown_conversion)
             replace_content = replace_content.replace('href="/', f'href="{basepath}')
             replace_content = replace_content.replace('src="/', f'src="{basepath}')
             with open(dest_path, "w") as f:
@@ -91,7 +93,7 @@ def main():
         shutil.rmtree("docs")
     os.mkdir("docs")
     copy_public("static", "docs")
-    generate_pages_recursive("static", "template.html", "docs", basepath)
+    generate_pages_recursive("content", "template.html", "docs", basepath)
     
 
 
