@@ -81,7 +81,7 @@ def generate_pages_recursive(dir_path_content, template_path, dest_dir_path, bas
                 f.write(replace_content)
         elif os.path.isdir(source_path):
             os.makedirs(os.path.join(dest_dir_path, item), exist_ok=True)
-            generate_pages_recursive(source_path, template_path, dest_dir_path, basepath)
+            generate_pages_recursive(source_path, template_path, os.path.join(dest_dir_path, item), basepath)
 
 
 def main():
